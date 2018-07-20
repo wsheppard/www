@@ -1,0 +1,65 @@
+{% extends "bootstrap/base.html" %}
+
+
+{% block styles %}
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" >
+<link rel="stylesheet"  href="{{url_for('static', filename='custom.css')}}">
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.1.0/css/all.css" integrity="sha384-lKuwvrZot6UHsBSfcMvOkWwlCMgc0TaWr+30HWe3a4ltaBwTZhyTEggF5tJv8tbt" crossorigin="anonymous">
+<link href="https://fonts.googleapis.com/css?family=Montserrat" rel="stylesheet">
+{% endblock %}
+
+{% block scripts %}
+<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js" integrity="sha384-smHYKdLADwkXOn1EmN1qk/HfnUcbVRZyYmZ4qpPea6sjB/pTJ0euyQp0Mk8ck+5T" crossorigin="anonymous"></script>
+<script defer src="https://use.fontawesome.com/releases/v5.1.0/js/all.js" integrity="sha384-3LK/3kTpDE/Pkp8gTNp2gR/2gOiwQ6QaO7Td0zV76UFJVhqLl4Vl3KL1We6q6wR9" crossorigin="anonymous"></script>
+{% endblock %}
+
+
+{% block content %}
+{{super()}}
+<div class="container">
+	<div class="row justify-content-md-center mt-5" style=" min-height:100px;">
+		<div class="col-md-8">
+			<div class="card shadow">
+				<div class="card-header bg-info">
+					<div class="row">
+						<div class="col-auto">
+							<img class="border rounded" style="width:auto;height:100px" src="{{url_for('static', filename = 'profile2018.jpg')}}">
+						</div>
+						<div class="col-8 text-white">
+							<h3>
+								<strong>WILLIAM<br>SHEPPARD</strong>
+							</h3>
+							<h6>
+								Senior Software Engineer
+							</h6>
+						</div>
+					</div>
+				</div>
+				<div class="card-body">
+					<p>Tenacious Problem Solving</p>	
+					<p>Embedded Linux</p>	
+					<p>Buildroot, Yocto</p>	
+					<p>Python - SQLAlchemy - Flask - Bootstrap</p>	
+				</div>
+				<div class="card-footer bg-info ">
+					<a href="mailto:sheppard.will@gmail.com">
+						<i class="fa fa-envelope text-white"></i>
+					</a>
+					<a class="float-right m-1" href="https://www.linkedin.com/in/will-sheppard-25044028">
+						<i class="fab fa-linkedin text-white"></i>
+					</a>
+					<a class="float-right m-1" href="https://github.com/wsheppard">
+						<i class="fab fa-github text-white"></i>
+					</a>
+
+				</div>
+			</div>
+		</div>
+
+	</div>
+</div>
+
+{% endblock  %}
+

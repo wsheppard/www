@@ -1,0 +1,15 @@
+[Unit]
+Description=Web Site
+
+[Service]
+User=will
+Group=will
+#EnvironmentFile=/home/will/envs/colcombe
+WorkingDirectory=/home/will/www
+ExecStart=/home/will/www/venv/bin/gunicorn -b localhost:8800 www:app --timeout 240 --log-level=debug --access-logfile -
+Restart=always
+ExecReload=/bin/kill -HUP $MAINPID
+
+[Install]
+WantedBy=multi-user.target
+
