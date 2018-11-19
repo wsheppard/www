@@ -4,7 +4,7 @@
 {{super()}}
 
 <nav class="navbar navbar-static-top navbar-dark bg-dark" style="z-index:0">
-		<a class="navbar-brand" href="/">S.W.Sheppard</a>
+		<a class="navbar-brand" href="/">JJR Software Solutions</a>
 		<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
 			<span class="navbar-toggler-icon"></span>
 		</button>
@@ -35,20 +35,10 @@
 {{super()}}
 <div class="container">
 	<div class="row">
-		<div class="col bg-primary">
-			One of three columns
+		<div class="col-sm-3">
+			{% include 'logo.svg' %}
 		</div>
-	
-	</div>
-	<div class="row">
-		<div class="col-sm bg-warning">
-			One of three columns
-		</div>
-		<div class="col-sm bg-info">
-			One of three columns
-		</div>
-		<div class="col-sm bg-warning">
-			One of three columns
+		<div class="col-sm-9">
 		</div>
 	</div>
 </div>
