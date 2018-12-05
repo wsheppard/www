@@ -1,0 +1,176 @@
+{% extends "bootstrap/base.html" %}
+
+{% block styles -%}
+{{super()}}
+<link href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous">
+
+<link href="//cdnjs.cloudflare.com/ajax/libs/x-editable/1.5.0/bootstrap3-editable/css/bootstrap-editable.css" rel="stylesheet"/>
+
+<style>
+
+.bits-group
+{}
+
+.bits
+{
+	border-style:solid;
+	border-width:thin;
+	flex: 1 1 0;
+	cursor: pointer;
+	user-select: none;
+	width: 34px;
+}
+
+.bits.set
+{
+	background-color: lightgray;
+}
+
+.bits.left
+{
+}
+
+.bits.right
+{
+/*	margin-right: 5px;*/
+}
+
+.bits:not(.right) + .bits:not(.left)
+{
+	border-left: 0;
+}
+
+.bits + .bits-group,
+.bits-group + .bits,
+.bits-group + .bits-group
+{
+	margin-left: 5px;
+}
+
+.dotted
+{
+	border-style: dotted;
+}
+
+</style>
+{% endblock styles %}
+
+{% block scripts %}
+{{super()}}
+<script
+  src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+  integrity="sha256-3edrmyuQ0w65f8gfBsqowzjJe2iM6n0nKciPUp8y+7E="
+  crossorigin="anonymous">
+</script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/x-editable/1.5.0/bootstrap3-editable/js/bootstrap-editable.min.js"></script>
+<script>
+
+select_state = function(){
+
+	var start = null;
+	var groups = [];
+
+	function do_update(){
+
+	}
+
+
+	function do_range(a,b){
+		a.bit = a[0].bit; 
+		b.bit = b[0].bit;
+
+		if ( a.bit < b.bit )
+			[ a, b ] = [ b, a ];
+
+		//$("#notice").html( "Start " + a.bit + " to " + b.bit );
+		//a.addClass( "left set" );	
+		//b.addClass( "right set" );
+
+
+		if ( a.bit == b.bit )
+			els = a;
+		else
+			els = a.add( a.nextUntil( b ) ).add( b );
+
+		test = els.hasClass( "bits-group" );
+		console.log(test);
+		console.log(els);
+
+		if ( test )
+			return;
+
+		grp = $('<div class="bits-group d-flex flex-row bd-highlight flex-nowrap"></div>')
+		grp[0].addEventListener('mousedown', function(e) { 
+			console.log("Tried to stop it..."); 
+			e.stopPropagation();
+			e.preventDefault();
+		}, true);
+		a.before( grp );
+
+		//els.addClass( "set" );
+		els.appendTo( grp );
+
+		elg = $('<div></div>').html("Group " + a.bit + " to " + b.bit);
+		
+		ee = elg.appendTo( $("#groups") );
+		ee[0].grp = grp;
+		ee.click( function () {
+			console.log( $(this)[0] );
+			$(this)[0].grp.toggleClass( "dotted" );
+		});
+		
+	}
+
+	$(".bits").click(function () {
+		$(this).toggleClass("set");
+	});
+
+	$(".bits").mouseenter(function () {
+		//$("#notice").html($(this).html());
+	});
+
+	$(".bits").mousedown(function (e){
+		console.log("Mousedown.");
+		if (e.shiftKey)
+			start = $(this);
+	});
+
+	$(".bits").mouseup(function (){
+		if (start)
+		{
+			do_range( start, $(this) );
+			start = null;
+		}
+	});
+
+	$(".bits").each( function(){
+		$(this)[0].bit = parseInt( $(this).data('bit') );
+	});
+
+}();
+
+</script>
+{% endblock scripts %}
+
+
+{% block content %}
+{{super()}}
+<div class="container">
+	<div class="py-5 text-center">
+			{% for r in nums %}
+			<div class="d-flex flex-row bd-highlight mb-3 flex-nowrap">
+				{% for n in r %}
+				<div data-bit={{n}} class="small bits">{{ n }}</div>
+				{% endfor %}
+			</div>
+			{% endfor %}
+	</div>
+	<div id="groups" class="py-5 text-left">
+		<p id="notice">PlaceHolder</p>
+	</div>
+</div>
+
+{% endblock  %}
+
+
+

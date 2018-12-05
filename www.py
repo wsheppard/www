@@ -9,6 +9,7 @@ from importlib import import_module as im
 
 app = Flask(__name__, static_url_path='/static')
 
+app.add_template_global(name='app', f=app)
 app.config['TEMPLATES_AUTO_RELOAD']=True
 
 bps = "root"

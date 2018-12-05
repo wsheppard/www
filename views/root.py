@@ -23,6 +23,10 @@ def cv():
 
 
 
+@bp.route("/table")
+def table():
+    return render_template('table.html', nums = [range(63,31,-1),  range(31,-1,-1) ]  )
+
 
 
 
