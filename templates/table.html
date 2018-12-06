@@ -1,21 +1,60 @@
 {% extends "bootstrap/base.html" %}
 
+
+{% macro group_info() %}
+<div class="card group-info mx-2 mb-4" data-toggle="modal" data-target="#editer">
+	<div class="card-header group-title"></div>
+	<div class="card-body group-data" ></div>
+</div>
+{% endmacro %}
+
+
+{% macro grouped_bits() %}
+<div class="bits-group bd-highlight d-flex flex-row xs mr-1 mb-1 "></div>
+{% endmacro %}
+
 {% block styles -%}
 {{super()}}
 <link href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous">
 
-<link href="//cdnjs.cloudflare.com/ajax/libs/x-editable/1.5.0/bootstrap3-editable/css/bootstrap-editable.css" rel="stylesheet"/>
-
 <style>
 
+.bigval
+{
+	cursor: pointer;
+}
+
 .bits-group
+{
+	border-style:solid;
+	border-width:thin;
+}
+
+.group-info
+{
+	cursor: pointer;
+	width: 20%;
+}
+
+.group-title
 {}
+
+.bits-group > .bits
+{
+	background-colour: lightblue;
+	margin: 0!important;
+}
+
+.bits-group > .bits + .bits
+{
+	border-left: 0;
+}
 
 .bits
 {
 	border-style:solid;
 	border-width:thin;
-	flex: 1 1 0;
+	/*flex: 1 1 0;*/
 	cursor: pointer;
 	user-select: none;
 	width: 34px;
@@ -26,19 +65,6 @@
 	background-color: lightgray;
 }
 
-.bits.left
-{
-}
-
-.bits.right
-{
-/*	margin-right: 5px;*/
-}
-
-.bits:not(.right) + .bits:not(.left)
-{
-	border-left: 0;
-}
 
 .bits + .bits-group,
 .bits-group + .bits,
@@ -57,85 +83,111 @@
 
 {% block scripts %}
 {{super()}}
-<script
-  src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
-  integrity="sha256-3edrmyuQ0w65f8gfBsqowzjJe2iM6n0nKciPUp8y+7E="
-  crossorigin="anonymous">
-</script>
-<script src="//cdnjs.cloudflare.com/ajax/libs/x-editable/1.5.0/bootstrap3-editable/js/bootstrap-editable.min.js"></script>
 <script>
 
-select_state = function(){
+'use strict';
+
+(function(){
 
 	var start = null;
 	var groups = [];
 
 	function do_update(){
 
+		var n = BigInt(0);
+		var t = $("#bigval");
+		var bs = $(".bits.set");
+		
+		bs.each( function(e) {
+			n += BigInt(1) << BigInt($(this)[0].bit);
+		});
+
+		var register = n;
+
+		t.html("0x" + n.toString(16) );
+
+		var grps = $(".group-info");
+
+		grps.each( function() {
+			
+			var grp,n;
+
+			grp = $(this)[0].grp[0];
+			n = register;
+			n = n >> BigInt( grp.bit_shift );
+			n = n & BigInt( grp.bit_mask );
+
+			$(this).find(".group-title").html( grp.gname + " [" + grp.a.bit + ":" + grp.b.bit + "]" );
+			$(this).find(".group-data").html( "0x" + n.toString(16) );
+		});
 	}
 
 
 	function do_range(a,b){
+
+		var els;
+		var grp;
+
 		a.bit = a[0].bit; 
 		b.bit = b[0].bit;
 
 		if ( a.bit < b.bit )
 			[ a, b ] = [ b, a ];
 
-		//$("#notice").html( "Start " + a.bit + " to " + b.bit );
-		//a.addClass( "left set" );	
-		//b.addClass( "right set" );
-
-
 		if ( a.bit == b.bit )
 			els = a;
 		else
 			els = a.add( a.nextUntil( b ) ).add( b );
 
-		test = els.hasClass( "bits-group" );
-		console.log(test);
-		console.log(els);
+		if ( els.hasClass( "bits-group" ) ) return;
 
-		if ( test )
-			return;
+		grp = $( {{ grouped_bits() |tojson|safe }} );
 
-		grp = $('<div class="bits-group d-flex flex-row bd-highlight flex-nowrap"></div>')
 		grp[0].addEventListener('mousedown', function(e) { 
-			console.log("Tried to stop it..."); 
 			e.stopPropagation();
 			e.preventDefault();
 		}, true);
 		a.before( grp );
 
-		//els.addClass( "set" );
+		grp[0].a = a[0];
+		grp[0].b = b[0];
+		grp[0].bit_shift = b.bit;
+		grp[0].bit_mask = (1 << els.length) - 1; 
+		grp[0].gname = "GRP";
+
 		els.appendTo( grp );
 
-		elg = $('<div></div>').html("Group " + a.bit + " to " + b.bit);
-		
-		ee = elg.appendTo( $("#groups") );
-		ee[0].grp = grp;
-		ee.click( function () {
-			console.log( $(this)[0] );
-			$(this)[0].grp.toggleClass( "dotted" );
+		var gi = $( {{ group_info()|tojson|safe }} ).appendTo( $("#groups") );
+		gi[0].grp = grp;
+		gi.click( function () {
+			var grp = $(this)[0].grp[0];
+			$("#editbox")[0].obj = function(a){
+				if(a) grp.gname = a;
+				else return grp.gname;
+			};
 		});
+
+		do_update();
 		
 	}
 
-	$(".bits").click(function () {
+	var bits = $(".bits");
+
+	bits.click(function () {
 		$(this).toggleClass("set");
+		do_update();
 	});
 
-	$(".bits").mouseenter(function () {
+	bits.mouseenter(function () {
 		//$("#notice").html($(this).html());
 	});
 
-	$(".bits").mousedown(function (e){
-		console.log("Mousedown.");
+	bits.mousedown(function (e){
 		if (e.shiftKey)
 			start = $(this);
 	});
 
-	$(".bits").mouseup(function (){
+	bits.mouseup(function (){
 		if (start)
 		{
 			do_range( start, $(this) );
@@ -143,11 +195,47 @@ select_state = function(){
 		}
 	});
 
-	$(".bits").each( function(){
+	bits.each( function(){
 		$(this)[0].bit = parseInt( $(this).data('bit') );
 	});
 
-}();
+	var edit = $("#editer");
+	var editbox = $("#editbox");
+		
+	edit.on('show.bs.modal', function(){
+		// Prepopulate the INPUT BOX with the group name
+		editbox.val( editbox[0].obj() );
+	});
+	
+	edit.on('shown.bs.modal', function(){
+		editbox.focus();
+	});
+
+	edit.keypress( function(e){
+		var kc = (e.keyCode ? e.keyCode : e.which );
+		if ( kc == '13' ){
+			$("#update_name").trigger( 'click' );
+			console.log("Enter");
+		}
+	});
+
+	edit.find("#update_name").click( function(){
+		editbox[0].obj( editbox.val() );
+		do_update();
+	});
+
+	function do_newval(v){
+		// Set all the appropirate bits...
+
+
+	}
+
+	$("#bigval").click( function(){
+		$("#editbox")[0].obj = do_newval; 
+	});
+
+	do_update();
+})();
 
 </script>
 {% endblock scripts %}
@@ -155,18 +243,41 @@ select_state = function(){
 
 {% block content %}
 {{super()}}
+
 <div class="container">
-	<div class="py-5 text-center">
-			{% for r in nums %}
-			<div class="d-flex flex-row bd-highlight mb-3 flex-nowrap">
-				{% for n in r %}
-				<div data-bit={{n}} class="small bits">{{ n }}</div>
+	<div id="editer" class="modal" tabindex="-1" role="dialog">
+		<div class="modal-dialog" role="document">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title">Modal title</h5>
+					<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+						<span aria-hidden="true">&times;</span>
+					</button>
+				</div>
+				<div class="modal-body">
+					<p>Modal body text goes here.</p>
+					<input id="editbox" type="text" class="form-control" placeholder="">
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+					<button id="update_name" type="button" class="btn btn-primary" data-dismiss="modal">Save changes</button>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div class="card my-5">
+		<div id="bigval" class="card-header text-center bigval" data-toggle="modal" data-target="#editer">
+		</div>
+		<div class="card-body" >
+			<div class="d-flex flex-row bd-highlight mb-3 flex-wrap text-center align-items-start">
+				{% for n in nums %}
+				<div data-bit={{n}} class="small bits mb-1 mr-1">{{ n }}</div>
 				{% endfor %}
 			</div>
-			{% endfor %}
+		</div>
 	</div>
-	<div id="groups" class="py-5 text-left">
-		<p id="notice">PlaceHolder</p>
+	<div id="groups" class="d-flex flex-row flex-wrap justify-content-around">
 	</div>
 </div>
 
