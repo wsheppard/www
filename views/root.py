@@ -21,13 +21,13 @@ def root():
 def cv():
     return render_template('cv.html')
 
-
-
 @bp.route("/table")
 def table():
-    return render_template('table.html', nums = [range(63,31,-1),  range(31,-1,-1) ]  )
+    return render_template('table.html', nums = range(63,-1,-1)  )
 
 
-
+@bp.route("/keypad")
+def table():
+    return render_template('keypad.html');
 
 
