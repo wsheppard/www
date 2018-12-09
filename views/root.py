@@ -27,7 +27,7 @@ def table():
 
 
 @bp.route("/keypad")
-def table():
+def keypad():
     return render_template('keypad.html');
 
 

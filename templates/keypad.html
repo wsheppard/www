@@ -4,19 +4,31 @@
 <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.5.0/css/all.css" integrity="sha384-B4dIYHKNBt8Bc12p+WXckhzcICo0wtJAoU8YZTY5qE0Id1GSseTk6S+L3BlXeVIU" crossorigin="anonymous">
 <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
 
+<style>
+.num
+{
+	font-size: xx-large;
+	height: 33%;
+	width: 33%;
+}
+
+html,body {
+	height:100%;
+}
+
+</style>
+
+{% endblock  %}
+
 {% block content %}
 {{super()}}
 
-<div class="container">
-	<div class="card mt-5 mb-3">
-		<div class="card-header d-flex justify-content-center bigval text-monospace" id="bigval" data-toggle="modal" data-target="#editer">
-		</div>
-		<div id="bitfield" class="card-body" >
-			<div class="d-flex flex-row bd-highlight mb-3 flex-wrap text-center justify-content-start">
-				{% for n in nums %}
-				<div data-bit={{n}} class="small text-monospace bits mb-1">{{ n }}</div>
-				{% endfor %}
-			</div>
+<div class="container h-100">
+	<div class="d-flex justify-content-center align-items-center h-100 p-5">
+		<div class="d-flex flex-wrap justify-content-around align-items-center h-100 w-100" >
+			{% for n in [9,8,7,6,5,4,3,2,1] %}
+			<button type="button" data-num={{n}} class="btn btn-light d-flex align-items-center border rounded justify-content-center num text-monospace">{{ n }}</button>
+			{% endfor %}
 		</div>
 	</div>
 </div>
@@ -28,230 +40,12 @@
 <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
-<script src="/static/underscore.string.min.js"></script>
-<script src="/static/node_modules/sprintf-js/dist/sprintf.min.js"></script>
 
 <script>
-
 
 'use strict';
 
 (function(){
-
-	var start = null;
-	var groups = [];
-
-	function do_update(){
-
-		var n = BigInt(0);
-		var t = $("#bigval");
-		var bs = $(".bits.set");
-		
-		bs.each( function(e) {
-			n += BigInt(1) << BigInt($(this)[0].bit);
-		});
-
-		var register = n;
-
-		t.html("0x" + n.toString(16).toUpperCase() );
-
-		var grps = $(".group-info");
-
-		grps.each( function() {
-			
-			var grp,n;
-
-			grp = $(this)[0].grp;
-			n = register;
-			n = n >> BigInt( grp.els.last()[0].bit );
-			n = n & BigInt( grp.bit_mask );
-
-			$(this).find(".group-title").html( grp.gname + " [" + grp.els[0].bit + ":" + grp.els.last()[0].bit + "]" );
-			$(this).find(".group-data").html( "0x" + n.toString(16).toUpperCase() );
-		});
-
-		grps.each( function(a){
-			console.log(a, $(this), $(this)[0].grp.els.first()[0].bit);
-			});
-
-		// SORT!
-		grps.sort( function(a,b){
-
-			var abit = a.grp.els[0].bit;
-			var bbit = b.grp.els[0].bit;
-
-			if ( abit < bbit )
-				return 1;
-			else if ( abit > bbit )
-				return -1;
-			else 
-				return 0;
-		});
-
-		grps.detach().appendTo( $( "#groups" ) );
-
-
-	}
-
-
-	function get_range(a,b)
-	{
-		var els;
-
-		a.bit = a[0].bit; 
-		b.bit = b[0].bit;
-
-		if ( a.bit < b.bit )
-			[ a, b ] = [ b, a ];
-
-		if ( a.bit == b.bit )
-			els = a;
-		else
-			els = a.add( a.nextUntil( b ) ).add( b );
-	
-		return els;
-	}
-	
-
-	function do_range(a,b){
-
-		var grp,els;
-
-		els = get_range(a,b);
-
-		if ( els.hasClass( "bits-group" ) ) return;
-
-		grp = $( {{ grouped_bits() |tojson|safe }} )[0];
-
-		grp.addEventListener('mousedown', function(e) { 
-			e.stopPropagation();
-			e.preventDefault();
-		}, true);
-		
-		$(els[0]).before( $(grp) );
-
-		grp.els = els;
-		grp.bit_mask = (1 << els.length) - 1; 
-		grp.gname = "GRP";
-
-		els.appendTo( grp );
-
-		var gi = $( {{ group_info()|tojson|safe }} ).appendTo( $("#groups") );
-		gi[0].grp = grp;
-		gi.click( function () {
-			var grp = $(this)[0].grp;
-			$("#editbox")[0].obj = function(a){
-				if(a) grp.gname = a;
-				else return grp.gname;
-			};
-		});
-
-		do_update();
-		
-	}
-
-	var bits = $(".bits");
-
-	bits.click(function () {
-		$(this).toggleClass("set");
-		do_update();
-	});
-
-	bits.mouseenter(function () {
-		// Highlight all the bits between "start" and here
-		if (start)
-		{
-			var els = get_range( start, $(this) );
-			var bits = $(".bits.bits-grouping");
-			
-			els.addClass("bits-grouping");
-			bits.not( els ).removeClass("bits-grouping");
-
-		}
-	});
-
-	bits.mousedown(function (e){
-		if (e.shiftKey)
-			start = $(this);
-	});
-
-	$(document).mouseup( function (){
-		if (start)
-		{
-			$(".bits.bits-grouping").removeClass("bits-grouping");
-			start = null;
-		}
-	});
-	
-	bits.mouseup( function (){
-		console.log("MOUSEUP");
-		if (start)
-		{
-			$(".bits.bits-grouping").removeClass("bits-grouping");
-			do_range( start, $(this) );
-			start = null;
-		}
-	});
-
-	bits.each( function(){
-		$(this)[0].bit = parseInt( $(this).data('bit') );
-	});
-
-	var edit = $("#editer");
-	var editbox = $("#editbox");
-		
-	edit.on('show.bs.modal', function(){
-		// Prepopulate the INPUT BOX with the group name
-		editbox.val( editbox[0].obj() );
-	});
-	
-	edit.on('shown.bs.modal', function(){
-		editbox.focus();
-	});
-
-	edit.keypress( function(e){
-		var kc = (e.keyCode ? e.keyCode : e.which );
-		if ( kc == '13' ){
-			$("#update_name").trigger( 'click' );
-			console.log("Enter");
-		}
-	});
-
-	edit.find("#update_name").click( function(){
-		editbox[0].obj( editbox.val() );
-		do_update();
-	});
-
-	function do_newval(v){
-		// Set all the appropirate bits...
-
-		if (!v) return $("#bigval").val();
-
-		console.log("Set new value " + parseInt(v));
-
-		var n = BigInt( parseInt(v) );
-		var i;
-		var bits = $('.bits');
-
-		for ( i=0; i<64; i++ )
-		{
-			if ( n & BigInt(1) )
-				$(bits[63-i]).addClass( "set" );
-			else
-				$(bits[63-i]).removeClass( "set" );
-
-			n >>= BigInt(1);
-		}
-
-		do_update();
-
-	}
-
-	$("#bigval").click( function(){
-		$("#editbox")[0].obj = do_newval; 
-	});
-
-	do_update();
 })();
 
 </script>
