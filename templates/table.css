@@ -1,0 +1,88 @@
+
+div.bits-grouping + div.bits-grouping
+{
+	border-left: 0;
+}
+div.bits-grouping
+{
+	margin-right: 0!important;
+}
+div.bits-grouping + :not(.bits-grouping)
+{
+	margin-left: 4px!important;
+}
+
+.bigval
+{
+	font-size: x-large;
+}
+
+.bigval, .group-info, .bits
+{
+	cursor: pointer;
+}
+
+.bits-group
+{
+	border-style:solid;
+	border-width:thin;
+}
+
+
+.group-info
+{
+	width: 20%;
+}
+
+
+.shrink {
+	transition: all 0.1s ease-in-out;
+}
+.grow {
+	transform: scale(1.7);
+	z-index: 100;
+	transition: all 0.1s ease-in-out;
+}
+
+.group-title
+{}
+
+.bits-group > .bits
+{
+	margin: 0!important;
+}
+
+.bits-group > .bits + .bits
+{
+	border-left: 0;
+}
+
+.bits
+{
+	border-style:solid;
+	border-width:thin;
+	/*flex: 1 1 0;*/
+	user-select: none;
+	width: 34px;
+	margin-right: 4px;
+	background-color: white;
+}
+
+
+.bits.set
+{
+	background-color: lightgray;
+}
+
+
+.bits + .bits-group,
+.bits-group + .bits,
+.bits-group + .bits-group
+{
+	margin-left: 5px;
+}
+
+.dotted
+{
+	border-style: dotted;
+}

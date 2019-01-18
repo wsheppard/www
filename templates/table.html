@@ -1,96 +1,16 @@
 {% extends "bootstrap/base.html" %}
 
-
-
 {% block styles -%}
 <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.5.0/css/all.css" integrity="sha384-B4dIYHKNBt8Bc12p+WXckhzcICo0wtJAoU8YZTY5qE0Id1GSseTk6S+L3BlXeVIU" crossorigin="anonymous">
 <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
 
-<style>
+<link rel="stylesheet" href="/static/table.css" >
 
-div.bits-grouping + div.bits-grouping
-{
-	border-left: 0;
-}
-div.bits-grouping
-{
-	margin-right: 0!important;
-}
-div.bits-grouping + :not(.bits-grouping)
-{
-	margin-left: 4px!important;
-}
-
-.bigval
-{
-	font-size: x-large;
-}
-
-.bigval, .group-info, .bits
-{
-	cursor: pointer;
-}
-
-.bits-group
-{
-	border-style:solid;
-	border-width:thin;
-}
-
-
-.group-info
-{
-	width: 20%;
-}
-
-.group-title
-{}
-
-.bits-group > .bits
-{
-	margin: 0!important;
-}
-
-.bits-group > .bits + .bits
-{
-	border-left: 0;
-}
-
-.bits
-{
-	border-style:solid;
-	border-width:thin;
-	/*flex: 1 1 0;*/
-	user-select: none;
-	width: 34px;
-	margin-right: 4px;
-}
-
-
-.bits.set
-{
-	background-color: lightgray;
-}
-
-
-.bits + .bits-group,
-.bits-group + .bits,
-.bits-group + .bits-group
-{
-	margin-left: 5px;
-}
-
-.dotted
-{
-	border-style: dotted;
-}
-
-</style>
 {% endblock styles %}
 
 
 {% macro group_info() %}
-<div class="card group-info mx-2 mb-4" >
+<div class="card group-info mx-2 mb-4 grow" >
 	<div class="card-header group-title" data-toggle="modal" data-target="#editer"></div>
 	<div class="text-monospace card-body group-data" ></div>
 </div>
@@ -98,7 +18,7 @@ div.bits-grouping + :not(.bits-grouping)
 
 
 {% macro grouped_bits() %}
-<div class="bits-group bd-highlight d-flex flex-row xs mr-1 mb-1 "></div>
+<div class="bits-group bd-highlight d-flex flex-row xs mr-1 mb-1 grow"></div>
 {% endmacro %}
 
 {% block content %}
@@ -145,11 +65,19 @@ div.bits-grouping + :not(.bits-grouping)
 
 
 {% block scripts %}
-<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+<script
+  src="https://code.jquery.com/jquery-3.3.1.min.js"
+  integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
+  crossorigin="anonymous"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
 <script src="/static/underscore.string.min.js"></script>
 <script src="/static/node_modules/sprintf-js/dist/sprintf.min.js"></script>
+
+<script
+  src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"
+  integrity="sha256-VazP97ZCwtekAsvgPBSUwPFKdrwD3unUfSGVYrahUqU="
+  crossorigin="anonymous"></script>
 
 <script>
 
@@ -179,26 +107,22 @@ div.bits-grouping + :not(.bits-grouping)
 
 		grps.each( function() {
 			
-			var grp,n;
+			var bitgroup,n;
 
-			grp = $(this)[0].grp;
+			bitgroup = $(this)[0].bitgroup;
 			n = register;
-			n = n >> BigInt( grp.els.last()[0].bit );
-			n = n & BigInt( grp.bit_mask );
+			n = n >> BigInt( bitgroup.lastChild.bit );
+			n = n & BigInt( bitgroup.bit_mask );
 
-			$(this).find(".group-title").html( grp.gname + " [" + grp.els[0].bit + ":" + grp.els.last()[0].bit + "]" );
+			$(this).find(".group-title").html( bitgroup.gname + " [" + bitgroup.firstChild.bit + ":" + bitgroup.lastChild.bit + "]" );
 			$(this).find(".group-data").html( "0x" + n.toString(16).toUpperCase() );
 		});
-
-		grps.each( function(a){
-			console.log(a, $(this), $(this)[0].grp.els.first()[0].bit);
-			});
 
 		// SORT!
 		grps.sort( function(a,b){
 
-			var abit = a.grp.els[0].bit;
-			var bbit = b.grp.els[0].bit;
+			var abit = a.bitgroup.firstChild.bit;
+			var bbit = b.bitgroup.firstChild.bit;
 
 			if ( abit < bbit )
 				return 1;
@@ -235,36 +159,37 @@ div.bits-grouping + :not(.bits-grouping)
 
 	function do_range(a,b){
 
-		var grp,els;
+		var bitgroup,els;
 
 		els = get_range(a,b);
 
 		if ( els.hasClass( "bits-group" ) ) return;
 
-		grp = $( {{ grouped_bits() |tojson|safe }} )[0];
+		bitgroup = $( {{ grouped_bits() |tojson|safe }} )[0];
 
-		grp.addEventListener('mousedown', function(e) { 
+		bitgroup.addEventListener('mousedown', function(e) { 
 			e.stopPropagation();
 			e.preventDefault();
 		}, true);
 		
-		$(els[0]).before( $(grp) );
+		$(els[0]).before( $(bitgroup) );
 
-		grp.els = els;
-		grp.bit_mask = (1 << els.length) - 1; 
-		grp.gname = "GRP";
+		bitgroup.els = els;
+		bitgroup.bit_mask = (1 << els.length) - 1; 
+		bitgroup.gname = "GRP";
 
-		els.appendTo( grp );
+		els.appendTo( bitgroup );
 
 		var gi = $( {{ group_info()|tojson|safe }} ).appendTo( $("#groups") );
-		gi[0].grp = grp;
+		gi[0].bitgroup = bitgroup;
 		gi.click( function () {
-			var grp = $(this)[0].grp;
+			var bitgroup = $(this)[0].bitgroup;
 			$("#editbox")[0].obj = function(a){
-				if(a) grp.gname = a;
-				else return grp.gname;
+				if(a) bitgroup.gname = a;
+				else return bitgroup.gname;
 			};
 		});
+		bitgroup.gi = gi;
 
 		do_update();
 		
@@ -369,6 +294,13 @@ div.bits-grouping + :not(.bits-grouping)
 
 	$("#bigval").click( function(){
 		$("#editbox")[0].obj = do_newval; 
+	});
+
+	$("#bitfield").on( " mouseleave mouseenter", ".bits-group", function(e){ 
+		$(this).add(this.gi).toggleClass("grow shrink");
+	});
+	$("#groups").on( " mouseleave mouseenter", ".group-info", function(e){ 
+		$(this).add(this.bitgroup).toggleClass("grow shrink");
 	});
 
 	do_update();
